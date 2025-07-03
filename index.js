@@ -1,6 +1,7 @@
 import dotEnv from "dotenv";
 import express from "express";
 import authRoutes from "./src/routes/authRoutes.js";
+import pool from "./src/db.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -38,7 +39,13 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Server
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+pool
+  .authenticate()
+  .then(async (result) => {
+    app.listen(PORT, () => {
+      console.log(`Backend listens to ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.log(err.toString());
+  });

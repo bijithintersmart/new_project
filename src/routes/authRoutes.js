@@ -5,7 +5,9 @@ import authenticate from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/register", register);
+import upload from "../middlewares/uploadMiddleware.js";
+
+router.post("/register", upload.single('image'), register);
 router.post("/login", login);
 router.put("/update", authenticate, updateUser);
 

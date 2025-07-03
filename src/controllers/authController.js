@@ -1,14 +1,35 @@
 
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import users from "../models/user.js";
+import pool from "../db.js";
 
 export const register = async (req, res) => {
   try {
-    const { username, password, name, image } = req.body;
+    const { username, password, name } = req.body;
+    const image = req.file ? req.file.path : null;
+
+    const existingUser = await pool.query(
+      "SELECT * FROM users WHERE username = $1",
+      [username]
+    );
+
+    if (existingUser.rows.length > 0) {
+      return res.status(400).json({ message: "Username already exists" });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
-    users.push({ username, password: hashedPassword, name, image });
-    res.status(201).json({ message: "User registered successfully" });
+    const newUser = await pool.query(
+      "INSERT INTO users (username, password, name, image) VALUES ($1, $2, $3, $4) RETURNING *",
+      [username, hashedPassword, name, image]
+    );
+
+    const token = jwt.sign({ username }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
+    const { password: _, ...userData } = newUser.rows[0];
+
+    res.status(201).json({ token, user: userData });
   } catch (error) {
     res.status(500).json({
       status: 500,
@@ -20,9 +41,13 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { username, password } = req.body;
-    const user = users.find((user) => user.username === username);
+    const result = await pool.query("SELECT * FROM users WHERE username = $1", [
+      username,
+    ]);
+    const user = result.rows[0];
+
     if (user && (await bcrypt.compare(password, user.password))) {
-      const token = jwt.sign({ username }, "your_jwt_secret", {
+      const token = jwt.sign({ username }, process.env.JWT_SECRET, {
         expiresIn: "1h",
       });
       const { password: _, ...userData } = user;
@@ -35,13 +60,12 @@ export const login = async (req, res) => {
   }
 };
 
-export const updateUser = (req, res) => {
+export const updateUser = async (req, res) => {
   try {
     const { name, image } = req.body;
-    const user = users.find((user) => user.username === req.user.username);
-    if (user) {
-      user.name = name || user.name;
-      user.image = image || user.image;
+    const updatedUser = await User.update(req.user.username, name, image);
+
+    if (result.rows.length > 0) {
       res.json({
         message: "User updated successfully",
       });
