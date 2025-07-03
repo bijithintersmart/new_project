@@ -1,6 +1,7 @@
 {
   "name": "new_project",
   "version": "1.0.0",
+  "type": "module",
   "description": "new project ",
   "main": "index.js",
   "scripts": {

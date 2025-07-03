@@ -1,15 +1,16 @@
-require("dotenv").config();
-const express = require("express");
+import dotEnv from "dotenv";
+import express from "express";
+import authRoutes from "./src/routes/authRoutes.js";
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Body parser
 app.use(express.json());
+//env config
+dotEnv.config();
 
-// Routes
-const authRoutes = require('./src/routes/authRoutes');
-
-app.use('/auth', authRoutes);
+app.use("/auth", authRoutes);
 
 app.get("/", (req, res) => {
   res.send("Welcome!");
@@ -41,4 +42,3 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
-
