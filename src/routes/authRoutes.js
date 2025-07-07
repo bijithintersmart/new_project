@@ -1,26 +1,15 @@
-
 import express from "express";
-import { register, login, updateUser } from "../controllers/authController.js";
-import authenticate from "../middlewares/authMiddleware.js";
+import { register, login } from "../controllers/authController.js";
+import upload from "../middlewares/uploadMiddleware.js";
+import { methodNotAllowed } from "../middlewares/methodNotAllowed.js";
 
 const router = express.Router();
 
-import upload from "../middlewares/uploadMiddleware.js";
-
-router.post("/register", upload.single('image'), register);
+// Public routes
+router.post("/register", upload.single("image"), register);
 router.post("/login", login);
-router.put("/update", authenticate, updateUser);
 
-router.get("/protected", authenticate, (req, res) => {
-  const userData = {
-    id: 1,
-    username: req.user.username,
-    email: `${req.user.username}@example.com`,
-  };
-  res.json({
-    message: `Welcome ${req.user.username}`,
-    data: userData,
-  });
-});
+router.all("/register", methodNotAllowed(["POST"]));
 
+router.all("/login", methodNotAllowed(["POST"]));
 export default router;

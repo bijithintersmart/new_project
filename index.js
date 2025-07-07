@@ -1,21 +1,22 @@
 import dotEnv from "dotenv";
 import express from "express";
 import authRoutes from "./src/routes/authRoutes.js";
-import pool from "./src/db.js";
+import userRoutes from "./src/routes/userRoutes.js";
+import db from "./models/index.js";
+import messages from "./src/utils/constants.js";
+
+//env config
+dotEnv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Body parser
 app.use(express.json());
-//env config
-dotEnv.config();
 
 app.use("/auth", authRoutes);
 
-app.get("/", (req, res) => {
-  res.send("Welcome!");
-});
+app.use("/user", userRoutes);
 
 app.get("/error", (req, res, next) => {
   try {
@@ -27,7 +28,7 @@ app.get("/error", (req, res, next) => {
 
 // 404 handler
 app.use((req, res, next) => {
-  res.status(404).json({ status: "error", message: "Not Found" });
+  res.status(404).json({ status: "error", message: messages.notFound });
 });
 
 // Global error handler
@@ -39,13 +40,20 @@ app.use((err, req, res, next) => {
   });
 });
 
-pool
-  .authenticate()
-  .then(async (result) => {
+const startServer = async () => {
+  try {
+    await db.sequelize.authenticate();
+    console.log("✅ Database connected");
+
+    await db.sequelize.sync({ alter: true });
+    console.log("✅ Models synced");
+
     app.listen(PORT, () => {
-      console.log(`Backend listens to ${PORT}`);
+      console.log(`🚀 Backend listening on port ${PORT}`);
     });
-  })
-  .catch((err) => {
-    console.log(err.toString());
-  });
+  } catch (error) {
+    console.error("❌ Unable to start server:", error.message || error);
+  }
+};
+
+startServer();
