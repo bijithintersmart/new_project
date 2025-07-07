@@ -2,6 +2,8 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import db from "../../models/index.js";
 import pool from "../db.js";
+import fs from "fs";
+import createTransporter from "../utils/mailClient.js";
 import messages from "../utils/constants.js";
 
 export const register = async (req, res) => {
@@ -41,6 +43,16 @@ export const register = async (req, res) => {
     });
 
     const { password: _, ...userData } = newUser.toJSON();
+    const transporter = await createTransporter();
+    const welcomeHtml = fs
+      .readFileSync("public/account_welcome_mail.html", "utf-8")
+      .replace("{{userName}}", newUser.name)
+      .replace("{{userEmail}}", newUser.email);
+    await transporter.sendMail({
+      to: newUser.email,
+      subject: `Welcome ${newUser.name}!,Good to see you`,
+      html: welcomeHtml,
+    });
 
     res.status(201).json({
       token,
@@ -117,7 +129,6 @@ export const updateUser = async (req, res) => {
     await existingUser.save();
 
     const { password: _, ...updatedUser } = existingUser.toJSON();
-
     return res.status(200).json({
       message: messages.userDataUpdate,
       user: updatedUser,
