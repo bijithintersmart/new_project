@@ -119,7 +119,7 @@ export const updateUser = async (req, res) => {
     const { password: _, ...updatedUser } = existingUser.toJSON();
 
     return res.status(200).json({
-      message: "User updated successfully",
+      message: messages.userDataUpdate,
       user: updatedUser,
     });
   } catch (error) {
