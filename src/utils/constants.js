@@ -10,6 +10,8 @@ const messages = {
   unAuthorized: "Poyi puthiya token edukada",
   notFound: "Sorry, e api chyithila keatto.",
   userDataUpdate: "Thangaludea data update ayirikunu",
+  loginPasswordError: (user) =>
+    `Nigaldea password adiku mister ithe ${user} password anne`,
   passwordAlreadyUsed: (user) =>
     `Stop please, E password use chyiyan pattila ithe ${
       user?.name || "unknown user"

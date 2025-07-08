@@ -23,7 +23,7 @@ export const register = async (req, res) => {
     for (let user of allUsers) {
       const isMatch = await bcrypt.compare(password, user.password);
       if (isMatch) {
-        return res.status(400).json({
+        return res.status(401).json({
           message: messages.passwordAlreadyUsed(user.name),
         });
       }
@@ -82,6 +82,19 @@ export const login = async (req, res) => {
       return res
         .status(401)
         .json({ statusCode: 401, message: messages.userNullError });
+    }
+
+    const allUsers = await db.User.findAll({
+      attributes: ["name", "password"],
+    });
+
+    for (let user of allUsers) {
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (isMatch) {
+        return res.status(401).json({
+          message: messages.loginPasswordError(user.name),
+        });
+      }
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
