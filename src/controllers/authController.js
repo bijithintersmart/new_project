@@ -1,7 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import db from "../../models/index.js";
-import pool from "../db.js";
 import fs from "fs";
 import createTransporter from "../utils/mailClient.js";
 import messages from "../utils/constants.js";
@@ -88,24 +87,24 @@ export const login = async (req, res) => {
       attributes: ["name", "password"],
     });
 
-    for (let user of allUsers) {
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (isMatch) {
-        return res.status(401).json({
-          message: messages.loginPasswordError(user.name),
-        });
-      }
-    }
+    // for (let user of allUsers) {
+    //   const isMatch = await bcrypt.compare(password, user.password);
+    //   if (isMatch) {
+    //     return res.status(401).json({
+    //       message: messages.loginPasswordError(user.name),
+    //     });
+    //   }
+    // }
 
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch) {
-      return res
-        .status(401)
-        .json({ statusCode: 401, message: messages.wrongPassword });
-    }
+    // const passwordMatch = await bcrypt.compare(password, user.password);
+    // if (!passwordMatch) {
+    //   return res
+    //     .status(401)
+    //     .json({ statusCode: 401, message: messages.wrongPassword });
+    // }
 
     const token = jwt.sign(
-      { id: user.id, email: user.email },
+      { id: user.id, email: user.email, name: user.name, image: user.image },
       process.env.JWT_SECRET,
       {
         expiresIn: "1h",

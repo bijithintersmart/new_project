@@ -2,6 +2,7 @@ import dotEnv from "dotenv";
 import express from "express";
 import authRoutes from "./src/routes/authRoutes.js";
 import userRoutes from "./src/routes/userRoutes.js";
+import pdfRoutes from "./src/routes/pdfRoutes.js";
 import db from "./models/index.js";
 import messages from "./src/utils/constants.js";
 
@@ -17,6 +18,8 @@ app.use(express.json());
 app.use("/auth", authRoutes);
 
 app.use("/user", userRoutes);
+
+app.use("/pdf", pdfRoutes);
 
 app.get("/error", (req, res, next) => {
   try {

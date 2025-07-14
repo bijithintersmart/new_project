@@ -2,6 +2,7 @@ import express from "express";
 import authenticate from "../middlewares/authMiddleware.js";
 import { updateUser } from "../controllers/authController.js";
 import {methodNotAllowed} from '../middlewares/methodNotAllowed.js'
+import * as pdfController from "../controllers/pdfController.js";
 
 const router = express.Router();
 
@@ -15,6 +16,7 @@ router.get("/home", authenticate, (req, res) => {
 router.put("/update", authenticate, updateUser);
 
 router.all("/home", methodNotAllowed(["GET"]));
+
 router.all("/update", methodNotAllowed(["PUT"]));
   
 export default router;

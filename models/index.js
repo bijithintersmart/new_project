@@ -1,13 +1,21 @@
 import { Sequelize, DataTypes } from "sequelize";
 import UserModel from "./user.js";
-import dotenv from "dotenv";
-import pool from "../src/db.js";
+import config from "../config/config.js";
 
-dotenv.config();
+const env = process.env.NODE_ENV || "development";
+const dbConfig = config[env];
 
 const db = {};
-db.sequelize = pool;
+
+const sequelize = new Sequelize(
+  dbConfig.database,
+  dbConfig.username,
+  dbConfig.password,
+  dbConfig
+);
+
+db.sequelize = sequelize;
 db.Sequelize = Sequelize;
-db.User = UserModel(pool, DataTypes);
+db.User = UserModel(sequelize, DataTypes);
 
 export default db;
