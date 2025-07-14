@@ -1,5 +1,6 @@
 import PDFDocument from "pdfkit";
 import axios from "axios";
+import puppeteer from "puppeteer";
 
 export const generatePdf = async (req, res) => {
   try {
@@ -58,5 +59,30 @@ export const generatePdfFromData = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send("Error generating PDF");
+  }
+};
+
+export const generatePdfFromHtml = async (req, res) => {
+  try {
+    const { htmlContent } = req.body;
+
+    if (!htmlContent) {
+      return res.status(400).send('HTML content is required');
+    }
+
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.setContent(htmlContent);
+    const pdfBuffer = await page.pdf({ format: 'A4' });
+
+    await browser.close();
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=generated.pdf');
+    res.send(pdfBuffer);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error generating PDF from HTML');
   }
 };
