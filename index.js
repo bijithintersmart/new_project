@@ -7,6 +7,7 @@ import userRoutes from "./src/routes/userRoutes.js";
 import pdfRoutes from "./src/routes/pdfRoutes.js";
 import outSideRoutes from "./src/routes/outSideRoutes.js";
 import websocketDocsRoute from "./src/routes/websocketRoutes.js";
+import streamRoute from "./src/routes/streamRoutes.js";
 import AppError from "./src/utils/appError.js";
 import db from "./models/index.js";
 import setupWebSocket from "./src/controllers/websocketController.js";
@@ -47,6 +48,8 @@ app.use("/pdf", pdfRoutes);
 app.use("/outside", outSideRoutes);
 
 app.use("/ws", websocketDocsRoute);
+
+app.use("/stream", streamRoute);
 
 app.get("/error", (req, res, next) => {
   try {
