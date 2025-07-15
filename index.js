@@ -3,6 +3,7 @@ import express from "express";
 import authRoutes from "./src/routes/authRoutes.js";
 import userRoutes from "./src/routes/userRoutes.js";
 import pdfRoutes from "./src/routes/pdfRoutes.js";
+import outSideRoutes from "./src/routes/outSideRoutes.js";
 import db from "./models/index.js";
 import messages from "./src/utils/constants.js";
 
@@ -20,6 +21,8 @@ app.use("/auth", authRoutes);
 app.use("/user", userRoutes);
 
 app.use("/pdf", pdfRoutes);
+
+app.use("/outside", outSideRoutes);
 
 app.get("/error", (req, res, next) => {
   try {
