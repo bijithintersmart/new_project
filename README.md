@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is a Node.js application built with Express.js, Sequelize (ORM for PostgreSQL), and other libraries to provide user authentication, PDF generation, and file upload functionalities.
+This is a Node.js application built with Express.js, Sequelize (ORM for PostgreSQL), and other libraries to provide user authentication, PDF generation, file upload, video streaming, and WebSocket functionalities.
 
 ## Features
 
@@ -11,25 +11,47 @@ This is a Node.js application built with Express.js, Sequelize (ORM for PostgreS
 - PDF Generation from user data, raw data, or HTML content
 - Image Uploads for user profiles
 - Email notifications (welcome email)
+- Video Streaming with byte-range support
+- WebSocket API for real-time communication
+- External API integrations (Fake Store API, Random User API)
 
 ## API Endpoints
 
+### General
+
+- `GET /`: Fetches a list of products from a fake product API.
+- `GET /error`: Triggers a test error for demonstration of global error handling.
+
 ### Authentication
 
-- `POST /api/auth/register`: Register a new user.
+- `POST /auth/register`: Register a new user.
   - Request Body: `name`, `email`, `password`, `image` (multipart/form-data)
-- `POST /api/auth/login`: Log in a user.
+- `POST /auth/login`: Log in a user.
   - Request Body: `email`, `password`
-- `PUT /api/auth/update`: Update user profile (requires authentication).
+- `PUT /auth/update`: Update user profile (requires authentication).
   - Request Body: `name`, `image` (multipart/form-data)
 
 ### PDF Generation (requires authentication)
 
-- `GET /api/pdf/generate`: Generate a PDF of the authenticated user's profile.
-- `POST /api/pdf/generate-from-data`: Generate a PDF from provided title and content.
+- `GET /pdf/generate`: Generate a PDF of the authenticated user's profile.
+- `POST /pdf/generate-from-data`: Generate a PDF from provided title and content.
   - Request Body: `title`, `content`
-- `POST /api/pdf/generate-from-html`: Generate a PDF from HTML content.
+- `POST /pdf/generate-from-html`: Generate a PDF from HTML content (uses worker threads for performance).
   - Request Body: `htmlContent`
+
+### External Data
+
+- `GET /outside/product-list`: Fetches a list of products from Fake Store API.
+- `GET /outside/random-user`: Fetches a random user from Random User API.
+
+### WebSocket
+
+- `GET /ws`: Endpoint for WebSocket connections. Connect using a WebSocket client (e.g., `ws://localhost:PORT/ws`). Sends random text every 3 seconds.
+
+### Video Streaming
+
+- `GET /stream/video/:filename`: Streams a video file from the `assets` folder. Supports byte-range requests for seeking.
+  - Example: `http://localhost:PORT/stream/video/sample.mp4`
 
 ## Getting Started
 
@@ -58,7 +80,7 @@ This is a Node.js application built with Express.js, Sequelize (ORM for PostgreS
 
 Create a `.env` file in the root directory of the project with the following variables:
 
-``` env
+```env
 PORT=3000
 JWT_SECRET=your_jwt_secret_key
 DB_NAME=your_database_name
@@ -190,11 +212,28 @@ npx sequelize-cli db:migrate
   - Corrected password comparison logic in login.
   - Switched to asynchronous file reading for welcome email template.
   - Removed duplicate `verifyToken` function (now handled by middleware).
+  - **Added HTML escaping for user data in welcome email to prevent XSS.**
 - **PDF Controller (`pdfController.js`)**:
   - Ensured `puppeteer.launch()` uses `headless: 'new'` for better performance.
   - Implemented `try...finally` block to guarantee `browser.close()` is called.
+  - **Implemented `worker_threads` for PDF generation from HTML to offload CPU-intensive tasks from the main thread.**
+  - **Added basic URL validation for `user.image` to mitigate SSRF vulnerabilities.**
 - **Upload Middleware (`uploadMiddleware.js`)**:
   - Added file type validation (JPEG, PNG, GIF only) and a 5MB size limit for uploads.
 - **Mail Client Utility (`mailClient.js`)**:
   - Refactored to create a single, reusable Nodemailer transporter instance, avoiding redundant creation on each email send.
   - Removed `nodemailer.createTestAccount()` and `dotenv.config()` from this file.
+- **Error Handling**:
+  - Implemented a custom `AppError` class for better distinction between operational and programming errors.
+  - Enhanced global error handler to correctly return specific status codes for operational errors (e.g., 404 Not Found).
+- **Security Hardening**:
+  - **HTTP Header Hardening:** Integrated `helmet` middleware to set various security-related HTTP headers (e.g., `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, `Strict-Transport-Security`, `Referrer-Policy`).
+  - **Content Security Policy (CSP):** Configured a basic CSP using `helmet` to control resource loading and mitigate XSS.
+- **Video Streaming**:
+  - Implemented byte-range requests for efficient streaming of large video files.
+  - Enabled dynamic video selection by filename from the `assets` folder.
+  - Added improved error handling for file not found scenarios.
+  - Included HTTP caching headers for better performance on repeated requests.
+- **WebSocket API**:
+  - Created a dedicated WebSocket API route (`/ws`) that sends random text every 3 seconds.
+  - Refactored WebSocket logic into a separate controller for better modularity.
