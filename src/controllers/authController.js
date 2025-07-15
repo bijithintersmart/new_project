@@ -43,10 +43,13 @@ export const register = async (req, res) => {
 
     const { password: _, ...userData } = newUser.toJSON();
     const transporter = await createTransporter();
-    const welcomeHtml = fs
-      .readFileSync("public/account_welcome_mail.html", "utf-8")
-      .replace("{{userName}}", newUser.name)
-      .replace("{{userEmail}}", newUser.email);
+    const welcomeHtml = await fs.promises
+      .readFile("public/account_welcome_mail.html", "utf-8")
+      .then((data) =>
+        data
+          .replace("{{userName}}", newUser.name)
+          .replace("{{userEmail}}", newUser.email)
+      );
     await transporter.sendMail({
       to: newUser.email,
       subject: `Welcome ${newUser.name}!,Good to see you`,
@@ -87,21 +90,21 @@ export const login = async (req, res) => {
       attributes: ["name", "password"],
     });
 
-    // for (let user of allUsers) {
-    //   const isMatch = await bcrypt.compare(password, user.password);
-    //   if (isMatch) {
-    //     return res.status(401).json({
-    //       message: messages.loginPasswordError(user.name),
-    //     });
-    //   }
-    // }
+    for (let user of allUsers) {
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (isMatch) {
+        return res.status(401).json({
+          message: messages.loginPasswordError(user.name),
+        });
+      }
+    }
 
-    // const passwordMatch = await bcrypt.compare(password, user.password);
-    // if (!passwordMatch) {
-    //   return res
-    //     .status(401)
-    //     .json({ statusCode: 401, message: messages.wrongPassword });
-    // }
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      return res
+        .status(401)
+        .json({ statusCode: 401, message: messages.wrongPassword });
+    }
 
     const token = jwt.sign(
       { id: user.id, email: user.email, name: user.name, image: user.image },
@@ -135,7 +138,7 @@ export const updateUser = async (req, res) => {
     }
 
     existingUser.name = name || existingUser.name;
-    existingUser.email = email || existingUser.email;
+    
     if (image) existingUser.image = image;
 
     await existingUser.save();
@@ -150,17 +153,4 @@ export const updateUser = async (req, res) => {
     return res.status(500).json({ message: messages.serverError });
   }
 };
-export const verifyToken = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  const token = authHeader?.split(" ")[1];
 
-  if (!token) return res.status(401).json({ message: messages.tokenError });
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (error) {
-    return res.status(403).json({ message: messages.unAuthorized });
-  }
-};

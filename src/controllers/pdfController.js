@@ -70,16 +70,18 @@ export const generatePdfFromHtml = async (req, res) => {
       return res.status(400).send('HTML content is required');
     }
 
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-    await page.setContent(htmlContent);
-    const pdfBuffer = await page.pdf({ format: 'A4' });
+    const browser = await puppeteer.launch({ headless: 'new' });
+    try {
+      const page = await browser.newPage();
+      await page.setContent(htmlContent);
+      const pdfBuffer = await page.pdf({ format: 'A4' });
 
-    await browser.close();
-
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename=generated.pdf');
-    res.send(pdfBuffer);
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename=generated.pdf');
+      res.send(pdfBuffer);
+    } finally {
+      await browser.close();
+    }
 
   } catch (error) {
     console.error(error);
