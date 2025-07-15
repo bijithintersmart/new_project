@@ -1,6 +1,6 @@
 import PDFDocument from "pdfkit";
 import axios from "axios";
-import puppeteer from "puppeteer";
+import { Worker } from "worker_threads";
 
 export const generatePdf = async (req, res) => {
   try {
@@ -67,24 +67,38 @@ export const generatePdfFromHtml = async (req, res) => {
     const { htmlContent } = req.body;
 
     if (!htmlContent) {
-      return res.status(400).send('HTML content is required');
+      return res.status(400).send("HTML content is required");
     }
 
-    const browser = await puppeteer.launch({ headless: 'new' });
-    try {
-      const page = await browser.newPage();
-      await page.setContent(htmlContent);
-      const pdfBuffer = await page.pdf({ format: 'A4' });
+    const worker = new Worker("./src/workers/pdfWorker.js", {
+      workerData: { htmlContent },
+    });
 
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', 'attachment; filename=generated.pdf');
+    worker.on("message", (pdfBuffer) => {
+      if (pdfBuffer.error) {
+        console.error("Error from PDF worker:", pdfBuffer.error);
+        return res.status(500).send("Error generating PDF from HTML");
+      }
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        "attachment; filename=generated.pdf"
+      );
       res.send(pdfBuffer);
-    } finally {
-      await browser.close();
-    }
+    });
 
+    worker.on("error", (error) => {
+      console.error("Worker error:", error);
+      res.status(500).send("Error generating PDF from HTML");
+    });
+
+    worker.on("exit", (code) => {
+      if (code !== 0) {
+        console.error(`Worker stopped with exit code ${code}`);
+      }
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).send('Error generating PDF from HTML');
+    res.status(500).send("Error generating PDF from HTML");
   }
 };

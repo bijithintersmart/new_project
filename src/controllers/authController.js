@@ -89,22 +89,23 @@ export const login = async (req, res) => {
     const allUsers = await db.User.findAll({
       attributes: ["name", "password"],
     });
+    
+    //PASSWORD CHECKING 
+    // for (let user of allUsers) {
+    //   const isMatch = await bcrypt.compare(password, user.password);
+    //   if (isMatch) {
+    //     return res.status(401).json({
+    //       message: messages.loginPasswordError(user.name),
+    //     });
+    //   }
+    // }
 
-    for (let user of allUsers) {
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (isMatch) {
-        return res.status(401).json({
-          message: messages.loginPasswordError(user.name),
-        });
-      }
-    }
-
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch) {
-      return res
-        .status(401)
-        .json({ statusCode: 401, message: messages.wrongPassword });
-    }
+    // const passwordMatch = await bcrypt.compare(password, user.password);
+    // if (!passwordMatch) {
+    //   return res
+    //     .status(401)
+    //     .json({ statusCode: 401, message: messages.wrongPassword });
+    // }
 
     const token = jwt.sign(
       { id: user.id, email: user.email, name: user.name, image: user.image },
