@@ -25,7 +25,8 @@
     "puppeteer": "^24.12.1",
     "sequelize": "^6.37.7",
     "sequelize-cli": "^6.6.3",
-    "worker-thread": "^1.1.0"
+    "worker-thread": "^1.1.0",
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "dotenv-cli": "^8.0.0",
