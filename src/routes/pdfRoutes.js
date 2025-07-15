@@ -6,16 +6,8 @@ import { methodNotAllowed } from "../middlewares/methodNotAllowed.js";
 const router = express.Router();
 
 router.get("/generate-pdf", authMiddleware, pdfController.generatePdf);
-router.post(
-  "/generate-pdf-from-data",
-  authMiddleware,
-  pdfController.generatePdfFromData
-);
-router.post(
-  "/generate-pdf-from-html",
-  authMiddleware,
-  pdfController.generatePdfFromHtml
-);
+router.post("/generate-pdf-from-data", pdfController.generatePdfFromData);
+router.post("/generate-pdf-from-html", pdfController.generatePdfFromHtml);
 
 router.all("/generate-pdf", methodNotAllowed(["GET"]));
 router.all("/generate-pdf-from-data", methodNotAllowed(["POST"]));
