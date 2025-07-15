@@ -43,12 +43,26 @@ export const register = async (req, res) => {
 
     const { password: _, ...userData } = newUser.toJSON();
     const transporter = await createTransporter();
+    const escapeHtml = (str) => {
+      return str.replace(/[&<>'"\/]/g, (tag) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '\'': '&#39;',
+        '"': '&quot;',
+        '/': '&#x2F;',
+      }[tag] || tag));
+    };
+
+    const escapedUserName = escapeHtml(newUser.name);
+    const escapedUserEmail = escapeHtml(newUser.email);
+
     const welcomeHtml = await fs.promises
       .readFile("public/account_welcome_mail.html", "utf-8")
       .then((data) =>
         data
-          .replace("{{userName}}", newUser.name)
-          .replace("{{userEmail}}", newUser.email)
+          .replace("{{userName}}", escapedUserName)
+          .replace("{{userEmail}}", escapedUserEmail)
       );
     await transporter.sendMail({
       to: newUser.email,

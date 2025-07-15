@@ -1,6 +1,7 @@
 import dotEnv from "dotenv";
 import express from "express";
-import http from "http"; // ✅ Import http module
+import helmet from 'helmet';
+import http from "http";
 import authRoutes from "./src/routes/authRoutes.js";
 import userRoutes from "./src/routes/userRoutes.js";
 import pdfRoutes from "./src/routes/pdfRoutes.js";
@@ -21,6 +22,20 @@ const server = http.createServer(app);
 
 // Body parser
 app.use(express.json());
+
+// Security Headers with Helmet
+app.use(helmet());
+
+// Basic Content Security Policy (CSP)
+app.use(helmet.contentSecurityPolicy({
+  directives: {
+    defaultSrc: ["'self'"],
+    scriptSrc: ["'self'", "'unsafe-inline'"], // 'unsafe-inline' is often needed for development, but should be removed in production
+    styleSrc: ["'self'", "'unsafe-inline'"], // 'unsafe-inline' is often needed for development, but should be removed in production
+    imgSrc: ["'self'", "data:", "https://fakestoreapi.com"], // Allow images from your domain, data URIs, and fakestoreapi
+    connectSrc: ["'self'", "ws://localhost:3000"], // Allow connections to your WebSocket server
+  },
+}));
 
 // Define routes
 app.use("/auth", authRoutes);

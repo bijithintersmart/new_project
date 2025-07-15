@@ -22,14 +22,20 @@ export const generatePdf = async (req, res) => {
     doc.moveDown();
     if (user.image) {
       try {
-        const imageResponse = await axios.get(user.image, {
-          responseType: "arraybuffer",
-        });
-        doc.image(imageResponse.data, {
-          fit: [250, 250],
-          align: "center",
-          valign: "center",
-        });
+        const imageUrl = user.image;
+        const urlRegex = /^(https?:\/\/)(?!10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|192\.168\.|127\.0\.0\.1|localhost)([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,6}(:\d+)?(\/\S*)?$/;
+        if (!urlRegex.test(imageUrl)) {
+          console.error("Invalid or potentially malicious image URL:", imageUrl);
+        } else {
+          const imageResponse = await axios.get(imageUrl, {
+            responseType: "arraybuffer",
+          });
+          doc.image(imageResponse.data, {
+            fit: [250, 250],
+            align: "center",
+            valign: "center",
+          });
+        }
       } catch (error) {
         console.error("Error fetching or processing image:", error);
       }
