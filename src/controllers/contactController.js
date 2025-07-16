@@ -1,6 +1,8 @@
 // src/controllers/contactController.js
 import AppError from "../utils/appError.js";
 import db from "../../models/index.js";
+import fs from "fs";
+import createTransporter from "../utils/mailClient.js";
 
 const Contact = db.Contact;
 
@@ -17,6 +19,21 @@ export const createContact = async (req, res, next) => {
       email,
       message,
       phone,
+    });
+
+    const transporter = await createTransporter();
+    const emailTemplate = await fs.promises.readFile("public/contact_mail.html", "utf-8");
+
+    const html = emailTemplate
+      .replace("{{name}}", name)
+      .replace("{{email}}", email)
+      .replace("{{phone}}", phone || 'N/A')
+      .replace("{{message}}", message);
+
+    await transporter.sendMail({
+      to: process.env.EMAIL,
+      subject: "New Contact Form Submission",
+      html,
     });
 
     res.status(201).json({

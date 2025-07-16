@@ -114,12 +114,12 @@ export const login = async (req, res) => {
     //   }
     // }
 
-    // const passwordMatch = await bcrypt.compare(password, user.password);
-    // if (!passwordMatch) {
-    //   return res
-    //     .status(401)
-    //     .json({ statusCode: 401, message: messages.wrongPassword });
-    // }
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      return res
+        .status(401)
+        .json({ statusCode: 401, message: messages.wrongPassword });
+    }
 
     const token = jwt.sign(
       { id: user.id, email: user.email, name: user.name, image: user.image },
@@ -166,6 +166,31 @@ export const updateUser = async (req, res) => {
   } catch (error) {
     console.error("Update error:", error);
     return res.status(500).json({ message: messages.serverError });
+  }
+};
+
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+
+    if (!email || !newPassword) {
+      return res.status(400).json({ message: "Email and new password are required" });
+    }
+
+    const user = await db.User.findOne({ where: { email } });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
