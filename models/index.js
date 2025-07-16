@@ -1,5 +1,6 @@
 import { Sequelize, DataTypes } from "sequelize";
 import UserModel from "./user.js";
+import ContactModel from "./contact.js";
 import config from "../config/config.js";
 import dotenv from "dotenv";
 dotenv.config();
@@ -37,5 +38,6 @@ if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 db.User = UserModel(sequelize, DataTypes);
+db.Contact = ContactModel(sequelize, DataTypes);
 
 export default db;
