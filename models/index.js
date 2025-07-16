@@ -9,7 +9,7 @@ const dbConfig = config[env];
 
 const db = {};
 
-const sequelize = process.env.DATABASE_URL
+const sequelize = (process.env.DATABASE_URL && process.env.DATABASE_URL !== '')
   ? new Sequelize(process.env.DATABASE_URL, {
       dialect: "postgres",
       protocol: "postgres",
@@ -26,6 +26,13 @@ const sequelize = process.env.DATABASE_URL
       dialect: "postgres",
       logging: false,
     });
+
+    
+if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
+  console.warn('DATABASE_URL is not set or is empty. Using local database configuration.');
+} else {
+  console.log('Using DATABASE_URL:', process.env.DATABASE_URL);
+}
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
