@@ -1,6 +1,7 @@
 import dotEnv from "dotenv";
 import express from "express";
 import helmet from 'helmet';
+import cors from "cors";
 import http from "http";
 import authRoutes from "./src/routes/authRoutes.js";
 import userRoutes from "./src/routes/userRoutes.js";
@@ -20,6 +21,9 @@ const PORT = process.env.PORT || 3000;
 
 // Create HTTP server from Express app
 const server = http.createServer(app);
+
+// CORS policy
+app.use(cors());
 
 // Body parser
 app.use(express.json());
